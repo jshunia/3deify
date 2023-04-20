@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers
 from sklearn.model_selection import train_test_split
@@ -33,13 +34,19 @@ val_models = np.load('val_models.npy')
 # Create the model
 model = create_model()
 
+# Define the model file name and check if it exists
+model_file = 'model.h5'
+if os.path.exists(model_file):
+    # Load the model from the file
+    model = tf.keras.models.load_model(model_file)
+    
 # Compile the model
 model.compile(optimizer=optimizers.Adam(learning_rate=0.001),
               loss='mean_squared_error',
               metrics=['mean_absolute_error'])
 
 # Train the model
-history = model.fit(train_images, train_models, epochs=100, batch_size=32, validation_data=(val_images, val_models))
+history = model.fit(train_images, train_models, epochs=1000, batch_size=32, validation_data=(val_images, val_models))
 
 # Save the model
-model.save('model.h5')
+model.save(model_file)
