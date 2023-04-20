@@ -14,7 +14,7 @@ def preprocess_image(image_path):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = cv2.resize(img, (128, 128))
     img = img / 255.0
-    return np.expand_dims(img, axis=0)
+    return img
     
 def preprocess_3d_model(model_path, voxel_resolution=32):
     mesh = trimesh.load_mesh(model_path)
@@ -41,12 +41,12 @@ for model_path in model_paths:
     model = preprocess_3d_model(model_path)
 
     # Preprocess and associate each 2D image with the corresponding 3D model
-    for image_path in image_paths:
-        image = preprocess_image(image_path)
+    images = [preprocess_image(image_path) for image_path in image_paths]
+    for image in images:
         image_data.append(image)
         model_data.append(model)
 
-images_2d = np.concatenate(image_data, axis=0)
+images_2d = np.array(image_data)
 models_3d = np.array(model_data)
 
 # Split the dataset into training and validation sets
