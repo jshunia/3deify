@@ -74,6 +74,6 @@ print("train_models_stacked shape:", train_models_stacked.shape)
 print("val_images_stacked shape:", val_images_stacked.shape)
 print("val_models_stacked shape:", val_models_stacked.shape)
 
-history = model.fit(train_images_stacked, train_models_stacked, epochs=100, batch_size=32, validation_data=(val_images_stacked, val_models_stacked))
+history = model.fit(train_images_stacked, train_models_stacked, epochs=10, batch_size=32, validation_data=(val_images_stacked, val_models_stacked))
 
 model.save('2d_to_3d_model.h5')
