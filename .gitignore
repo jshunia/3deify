@@ -1,14 +1,17 @@
 # Directories
-**/logs
-**/bin
-**/obj
-**/TestResults
-**/.vs
+**/_output
+**/_images
 
 # File Extensions
 *.dll
 *.pdb
 *.log
 *.exe
+
+# Datasets
+*.npy
+
+# Models
+*.h5
 
 # EOF

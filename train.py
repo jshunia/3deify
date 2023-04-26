@@ -2,18 +2,27 @@
 import numpy as np
 import os
 import tensorflow as tf
+import sys
 from tensorflow.keras import layers, models, optimizers
 from sklearn.model_selection import train_test_split
 
 # Constants
+MODEL_FILE = 'model.h5'
 NUM_DIMS = 3  # Define the number of dimensions for each point in the point cloud
-VOXEL_RESOLUTION = 32
+VOXEL_RES= 32
+IMAGE_RES= 128
+
+EPOCHS = 10
+if len(sys.argv) >= 2:
+    EPOCHS = int(sys.argv[1])
+
+print(f'Training model for {EPOCHS} epoch(s)')
 
 # Functions from previous responses
 def create_model():
     model = models.Sequential()
 
-    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(128, 128, 3)))
+    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(IMAGE_RES, IMAGE_RES, NUM_DIMS)))
     model.add(layers.MaxPooling2D((2, 2)))
     model.add(layers.Conv2D(64, (3, 3), activation='relu'))
     model.add(layers.MaxPooling2D((2, 2)))
@@ -25,8 +34,8 @@ def create_model():
     model.add(layers.Flatten())
     model.add(layers.Dense(1024, activation='relu'))
     model.add(layers.Dense(4096, activation='relu'))
-    model.add(layers.Dense(VOXEL_RESOLUTION*VOXEL_RESOLUTION*VOXEL_RESOLUTION, activation='relu')) # Change the output size to x*y*z
-    model.add(layers.Reshape((VOXEL_RESOLUTION, VOXEL_RESOLUTION, VOXEL_RESOLUTION))) # Change the output shape to (x, y, z)
+    model.add(layers.Dense(VOXEL_RES*VOXEL_RES*VOXEL_RES, activation='relu')) # Change the output size to x*y*z
+    model.add(layers.Reshape((VOXEL_RES, VOXEL_RES, VOXEL_RES))) # Change the output shape to (x, y, z)
 
     return model
 	
@@ -47,8 +56,8 @@ def chamfer_distance(point_clouds, predicted):
 # Load your dataset
 train_images = np.load('train_images.npy')
 val_images = np.load('val_images.npy')
-train_models = np.load('train_models.npy')
-val_models = np.load('val_models.npy')
+train_objs = np.load('train_objs.npy')
+val_objs = np.load('val_objs.npy')
 
 # Check for GPU availability
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
@@ -65,22 +74,22 @@ else:
 model = create_model()
 
 # Define the model file name and check if it exists
-model_file = 'model.h5'
-if os.path.exists(model_file):
+
+if os.path.exists(MODEL_FILE):
     # Load the model from the file
-    model = tf.keras.models.load_model(model_file)
-    print(f'Loaded existing model: {model_file}')
+    model = tf.keras.models.load_model(MODEL_FILE)
+    print(f'Loaded existing model: {MODEL_FILE}')
 else:
-	 print(f'Creating new model: {model_file}')
+	 print(f'Creating new model: {MODEL_FILE}')
 
 # Compile the model
 # TODO: Figure out which optimizer works best, and what settings are best. Nadam and Adam optimizers both seem to work well.
 model.compile(optimizer=optimizers.Nadam(learning_rate=0.001),
-              #loss=chamfer_distance, metrics=[chamfer_distance])
+              #loss=chamfer_distance, metrics=[chamfer_distance]) # TODO: Figure out how to get Chamfer Distance to work properly and determine if it is a better loss function for training this model.
 			  loss='mean_squared_error', metrics=['mean_absolute_error'])
 
 # Train the model
-history = model.fit(train_images, train_models, epochs=5, batch_size=32, validation_data=(val_images, val_models))
+history = model.fit(train_images, train_objs, epochs=EPOCHS, batch_size=32, validation_data=(val_images, val_objs))
 
 # Save the model
-model.save(model_file)
+model.save(MODEL_FILE)

@@ -5,12 +5,15 @@ import tensorflow as tf
 import trimesh
 import trimesh.voxel
 
-IMAGE_RESOLUTION = 128
+IMAGE_RES = 128
+INPUT_IMAGE_PATH = '_predict/input.png'
+if len(sys.argv) >= 2:
+    INPUT_IMAGE_PATH = sys.argv[1]
 
 def preprocess_image(image_path):
     img = cv2.imread(image_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = cv2.resize(img, (IMAGE_RESOLUTION, IMAGE_RESOLUTION))
+    img = cv2.resize(img, (IMAGE_RES, IMAGE_RES))
     img = img / 255.0
     return img[np.newaxis, :, :, :]
 
@@ -29,8 +32,10 @@ def save_mesh_to_obj(mesh, output_path):
 model = tf.keras.models.load_model('model.h5')
 
 # Preprocess input image
-input_image_path = '_predict/input.png'
-preprocessed_image = preprocess_image(input_image_path)
+
+image_name = os.path.basename(INPUT_IMAGE_PATH)
+image_name_without_ext = os.path.splitext(image_name)[0]
+preprocessed_image = preprocess_image(INPUT_IMAGE_PATH)
 
 # Predict the 3D voxel data
 predicted_voxels = model.predict(preprocessed_image)[0]
@@ -43,5 +48,5 @@ processed_voxels = postprocess_voxels(predicted_voxels, threshold)
 mesh = voxels_to_mesh(processed_voxels)
 
 # Save the mesh as an OBJ file
-output_path = f'_predict/model.obj'
+output_path = f'_predict/{image_name}.obj'
 save_mesh_to_obj(mesh, output_path)

@@ -1,10 +1,32 @@
+# 3deify - Copyright (C) Joseph M. Shunia, 2023
+# NOTE: To run this script, save it to a file (e.g., create_dataset.py) and run it from the command line using Blender's Python: blender -b -P create_dataset.py <object_name>
 import bpy
+import glob
 import os
 import math
+import sys
 from mathutils import Vector
+
+if len(sys.argv) != 5:
+    print("Usage: blender -b -P create_dataset.py <object_name>")
+    sys.exit(1)
+    
+OBJ_FILE = sys.argv[4]
+OBJ_DIR = '_objects'
+IMAGE_DIR = '_images'
+IMAGE_RES = 128
+
+OBJ_PATH = os.path.join(OBJ_DIR, OBJ_FILE)
+print(f'Creating dataset for object file: {OBJ_PATH}')
 
 cwd = os.getcwd()
 
+def reset_blender_scene(use_homefile=False):
+    if (use_homefile):
+        bpy.ops.wm.read_homefile(use_empty=True)
+    else:
+	    bpy.ops.wm.read_factory_settings(use_empty=True)
+            
 def calculate_object_bounding_box_center(obj):
     local_coords = [Vector(corner) for corner in obj.bound_box]
     om = obj.matrix_world
@@ -52,13 +74,13 @@ def set_camera_location_center(angle_x, angle_y, distance):
         constraint.track_axis = 'TRACK_NEGATIVE_Z'
         constraint.up_axis = 'UP_Y'    
 
-def render_and_save(output_dir, model_name, angle_x, angle_y):
-    output_file = os.path.join(cwd, output_dir, f'{model_name}_{angle_x}_{angle_y}.png')
+def render_and_save(output_dir, obj_name, angle_x, angle_y):
+    output_file = os.path.join(output_dir, f'{obj_name}_{angle_x}_{angle_y}.png')
     bpy.context.scene.render.filepath = output_file
     bpy.ops.render.render(write_still=True)
 
-def create_dataset(model_path, output_dir, distance=0, angle_step=45):
-    model_name = os.path.basename(model_path)
+def create_dataset(obj_path, output_dir, distance=0, angle_step=45):
+    obj_name = os.path.basename(obj_path)
     
     # Clear existing mesh objects
     bpy.ops.object.select_all(action='DESELECT')
@@ -66,11 +88,11 @@ def create_dataset(model_path, output_dir, distance=0, angle_step=45):
     bpy.ops.object.delete()
 
     # Import 3D model
-    bpy.ops.import_scene.obj(filepath=model_path)
+    bpy.ops.import_scene.obj(filepath=obj_path)
 
     # Set render resolution and format
-    bpy.context.scene.render.resolution_x = 128
-    bpy.context.scene.render.resolution_y = 128
+    bpy.context.scene.render.resolution_x = IMAGE_RES
+    bpy.context.scene.render.resolution_y = IMAGE_RES
     bpy.context.scene.render.image_settings.file_format = 'PNG'
 	
     # Set render engine to Cycles
@@ -109,23 +131,15 @@ def create_dataset(model_path, output_dir, distance=0, angle_step=45):
     background = world_nodes.new(type='ShaderNodeBackground')
     background.inputs['Strength'].default_value = 1.0  # Adjust the strength of the environment light
     #background.inputs['Color'].default_value = (1, 1, 1, 1)  # Set the color to white
-    background.inputs['Color'].default_value = (0.25, 0.25, 0.25, 1)  # Set the color to gray
+    background.inputs['Color'].default_value = (0.1, 0.1, 0.1, 1)  # Set the color to gray
     world_links.new(background.outputs['Background'], world_output.inputs['Surface'])
     
     # Capture images from multiple perspectives
     for angle_x in range(0, 360, angle_step):
         for angle_y in range(0, 360, angle_step):
             #set_camera_location_center(angle_x, angle_y, distance) # Set camera location to center (less accurate for complex polygons).
-            set_camera_location(camera, obj_center, angle_x, angle_y, distance)
+            set_camera_location(camera, obj_center, angle_x, angle_y, distance) # Set camera location for complex polygon (TODO: Fix this. Camera is off center for some objects.)
             camera.data.ortho_scale = max_dim * (1.5 + abs(math.sin(math.radians(angle_x))))  # Adjust ortho_scale dynamically
-            render_and_save(output_dir, model_name, angle_x, angle_y)
+            render_and_save(output_dir, obj_name, angle_x, angle_y)
 
-# Example usage
-# To run the script, save it to a file (e.g., create_dataset.py) and run it using Blender's Python: 
-# blender -b -P create_dataset.py
-
-model_file = 'capsule.obj'
-model_dir = '_input'
-output_dir = '_output'
-model_path = f'{model_dir}/{model_file}'
-create_dataset(model_path, output_dir)
+create_dataset(OBJ_PATH, IMAGE_DIR)
