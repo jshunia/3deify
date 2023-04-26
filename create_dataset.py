@@ -124,7 +124,7 @@ def create_dataset(model_path, output_dir, distance=0, angle_step=45):
 # To run the script, save it to a file (e.g., create_dataset.py) and run it using Blender's Python: 
 # blender -b -P create_dataset.py
 
-model_file = 'cube.obj'
+model_file = 'capsule.obj'
 model_dir = '_input'
 output_dir = '_output'
 model_path = f'{model_dir}/{model_file}'

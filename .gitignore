@@ -1,0 +1,14 @@
+# Directories
+**/logs
+**/bin
+**/obj
+**/TestResults
+**/.vs
+
+# File Extensions
+*.dll
+*.pdb
+*.log
+*.exe
+
+# EOF

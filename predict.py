@@ -1,13 +1,16 @@
+# 3deify - Copyright (C) Joseph M. Shunia, 2023
 import cv2
 import numpy as np
 import tensorflow as tf
 import trimesh
 import trimesh.voxel
 
+IMAGE_RESOLUTION = 128
+
 def preprocess_image(image_path):
     img = cv2.imread(image_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = cv2.resize(img, (128, 128))
+    img = cv2.resize(img, (IMAGE_RESOLUTION, IMAGE_RESOLUTION))
     img = img / 255.0
     return img[np.newaxis, :, :, :]
 
@@ -26,14 +29,14 @@ def save_mesh_to_obj(mesh, output_path):
 model = tf.keras.models.load_model('model.h5')
 
 # Preprocess input image
-input_image_path = '_output/cube.obj_45_45.png'
+input_image_path = '_predict/input.png'
 preprocessed_image = preprocess_image(input_image_path)
 
 # Predict the 3D voxel data
 predicted_voxels = model.predict(preprocessed_image)[0]
 
 # Postprocess the voxel data
-threshold = 0.5
+threshold = 0.0
 processed_voxels = postprocess_voxels(predicted_voxels, threshold)
 
 # Convert voxels to a mesh
