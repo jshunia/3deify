@@ -1,9 +1,11 @@
 # 3deify - Copyright (C) Joseph M. Shunia, 2023
 import cv2
 import numpy as np
+import os
 import tensorflow as tf
 import trimesh
 import trimesh.voxel
+import sys
 
 IMAGE_RES = 128
 INPUT_IMAGE_PATH = '_predict/input.png'
