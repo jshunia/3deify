@@ -4,9 +4,10 @@ import glob
 import math
 import numpy as np
 import os
+import re
+import sys
 import tensorflow as tf
 import trimesh
-import sys
 from trimesh.voxel import creation
 from tensorflow.keras import layers, models, optimizers
 from sklearn.model_selection import train_test_split
@@ -46,12 +47,18 @@ def preprocess_3d_object(obj_path, voxel_resolution=VOXEL_RES):
     return padded_voxel_matrix
 	
 # Loads the 3d object, rotates it, and converts it to a format that can be used as training data.
-def preprocess_3d_object_rotate(obj_path, rot_angle, rot_axis, voxel_resolution=VOXEL_RES):
+def preprocess_3d_object_rotate(obj_path, angle_x, angle_y, voxel_resolution=VOXEL_RES):
     # Load the 3D object
     mesh = trimesh.load_mesh(obj_path)
 	
     # Rotate the object
-    mesh.apply_transform(trimesh.transformations.rotation_matrix(rot_angle, rot_axis))
+    mesh.apply_transform(trimesh.transformations.rotation_matrix(angle_x, [1,0,0]))
+    mesh.apply_transform(trimesh.transformations.rotation_matrix(angle_y, [0,1,0]))
+    
+    #mesh.rotation_euler[0] = math.radians(angle_x)
+    #mesh.rotation_euler[1] = math.radians(angle_y)
+    #mesh.rotation_euler[2] = 0
+    #mesh.apply_transform(trimesh.transformations.rotation_matrix(rot_angle, rot_axis))
 	
     pitch = mesh.extents.max() / voxel_resolution
     voxels = trimesh.voxel.creation.voxelize(mesh, pitch)
@@ -110,6 +117,13 @@ def preprocess_3d_object_random(obj_path, voxel_resolution=VOXEL_RES):
 
     return padded_voxel_matrix
 
+def parse_rot_x_y(filename):
+    parts = filename.split('_')
+    if len(parts) >= 2:
+        return int(parts[-2]), int(parts[-1])
+    else:
+        raise ValueError('The input string must have at least two underscore-separated values.')
+
 # Load your dataset
 image_data = []
 obj_data = []
@@ -128,12 +142,18 @@ for obj_path in obj_paths:
 
     # Preprocess and associate each 2D image with the corresponding 3D object
     images = [preprocess_image(image_path) for image_path in image_paths]
+    i = 0
     for image in images:
+        image_path = image_paths[i]
+        image_name = os.path.splitext(os.path.basename(image_path))[0]
+        
         image_data.append(image)
-        obj1 = preprocess_3d_object(obj_path)
+        angle_x, angle_y = parse_rot_x_y(image_name)
+        obj1 = preprocess_3d_object_rotate(obj_path, angle_x, angle_y)
         obj_data.append(obj1)
         #obj_data.append(obj)
-
+        i += 1
+        
 images_2d = np.array(image_data)
 objs_3d = np.array(obj_data)
 #objs_3d = np.array(obj_data, dtype=object)

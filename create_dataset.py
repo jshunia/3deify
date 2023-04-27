@@ -75,9 +75,14 @@ def set_camera_location_center(angle_x, angle_y, distance):
         constraint.up_axis = 'UP_Y'    
 
 def render_and_save(output_dir, obj_name, angle_x, angle_y):
-    output_file = os.path.join(output_dir, f'{obj_name}_{angle_x}_{angle_y}.png')
+    output_file = os.path.join(cwd, output_dir, f'{obj_name}_{angle_x}_{angle_y}.png')
     bpy.context.scene.render.filepath = output_file
     bpy.ops.render.render(write_still=True)
+    
+def rotate_obj(obj, angle_x, angle_y):
+    obj.rotation_euler[0] = math.radians(angle_x)
+    obj.rotation_euler[1] = math.radians(angle_y)
+    obj.rotation_euler[2] = 0
 
 def create_dataset(obj_path, output_dir, distance=0, angle_step=45):
     obj_name = os.path.basename(obj_path)
@@ -111,12 +116,14 @@ def create_dataset(obj_path, output_dir, distance=0, angle_step=45):
     obj = bpy.context.selected_objects[0]
     obj_center = calculate_object_bounding_box_center(obj)
     max_dim = max(obj.dimensions)
+    #distance = max_dim * 2
     distance = max_dim * 2
-    
+     
      # Set camera to orthographic projection
     camera = bpy.data.objects['Camera']
     camera.data.type = 'ORTHO'
-    camera.data.ortho_scale = max_dim * 1.5
+    #camera.data.ortho_scale = max_dim * 1.5
+    camera.data.ortho_scale = max_dim * 3   # zoom out
     
     #distance = max_dim * 2
     #bpy.data.cameras['Camera'].lens = max_dim * 1.5
@@ -134,12 +141,20 @@ def create_dataset(obj_path, output_dir, distance=0, angle_step=45):
     background.inputs['Color'].default_value = (0.1, 0.1, 0.1, 1)  # Set the color to gray
     world_links.new(background.outputs['Background'], world_output.inputs['Surface'])
     
+    # Update camera location
+    set_camera_location(camera, obj_center, 0, 0, distance)
+    
     # Capture images from multiple perspectives
     for angle_x in range(0, 360, angle_step):
         for angle_y in range(0, 360, angle_step):
             #set_camera_location_center(angle_x, angle_y, distance) # Set camera location to center (less accurate for complex polygons).
-            set_camera_location(camera, obj_center, angle_x, angle_y, distance) # Set camera location for complex polygon (TODO: Fix this. Camera is off center for some objects.)
-            camera.data.ortho_scale = max_dim * (1.5 + abs(math.sin(math.radians(angle_x))))  # Adjust ortho_scale dynamically
+            #set_camera_location(camera, obj_center, angle_x, angle_y, distance) # Set camera location for complex polygon (TODO: Fix this. Camera is off center for some objects.)
+            #set_camera_location(camera, obj_center, angle_x, angle_y, distance)
+            #camera.data.ortho_scale = max_dim * (1.5 + abs(math.sin(math.radians(angle_x))))  # Adjust ortho_scale dynamically
+            rotate_obj(obj, angle_x, angle_y)
             render_and_save(output_dir, obj_name, angle_x, angle_y)
-
+            
+    # TODO: Translate / rotate camera to capture images from multiple perspectives (?). Need to determine if there is benefit to doing this. -JMS
+    # TODO: Translate object to capture images of object at varying locations (?).  Need to determine if there is benefit to doing this. -JMS
+    
 create_dataset(OBJ_PATH, IMAGE_DIR)
