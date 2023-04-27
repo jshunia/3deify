@@ -24,6 +24,8 @@ Subject to the terms and conditions of this Agreement, Licensor hereby grants Li
 
 (d) Licensee shall not use the Source Code, or any portion thereof, as AI Training Data.
 
+(e) Licensee shall not use any AI models or output generated or trained by the Source Code, or any modifications or derivatives thereof, for Commercial Use.
+
 ## 4. Attribution
 
 In any use of the Source Code, Licensee shall provide a clear and conspicuous attribution to the Licensor as the original author of the Source Code, including, at a minimum, the Licensor's name, the name of the Source Code, and a link to the original Source Code repository.
