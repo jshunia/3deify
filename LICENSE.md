@@ -12,7 +12,7 @@ This License Agreement ("Agreement") is entered into as of the date of acceptanc
 
 ## 2. License Grant
 
-Subject to the terms and conditions of this Agreement, Licensor hereby grants Licensee a worldwide, non-exclusive, royalty-free, non-transferable, and non-sublicensable license to use, reproduce, display, and modify the Source Code solely for Educational Use, provided that Licensee clearly attributes the Source Code to the Licensor as the original author.
+Subject to the terms and conditions of this Agreement, Licensor hereby grants Licensee a worldwide, non-exclusive, royalty-free, non-transferable, and non-sublicensable license to use, reproduce, and display the Source Code solely for Educational Use, provided that Licensee clearly attributes the Source Code to the Licensor as the original author. Licensee is not granted permission to modify the Source Code or create derivatives thereof.
 
 ## 3. Restrictions
 
@@ -25,6 +25,8 @@ Subject to the terms and conditions of this Agreement, Licensor hereby grants Li
 (d) Licensee shall not use the Source Code, or any portion thereof, as AI Training Data.
 
 (e) Licensee shall not use any AI models or output generated or trained by the Source Code, or any modifications or derivatives thereof, for Commercial Use.
+
+(f) Licensee shall not create any derivative works based on the Source Code or any portion thereof.
 
 ## 4. Attribution
 
@@ -52,7 +54,7 @@ This Agreement shall be governed by and construed in accordance with the laws of
 
 This Agreement constitutes the entire agreement between the parties with respect to the subject matter hereof and supersedes all prior or contemporaneous agreements, understandings, and representations, whether written or oral, relating to the subject matter hereof.
 
-By using, reproducing, displaying, or modifying the Source Code, Licensee agrees to be bound by the terms and conditions of this Agreement.
+By using, reproducing, or displaying the Source Code, Licensee agrees to be bound by the terms and conditions of this Agreement.
 
 Joseph M. Shunia, Licensor
 
