@@ -1,5 +1,7 @@
 # 3DEIFY
-An experimental image-to-3d model which uses zero-shot classification to predict a 3d object from a single 2d image.
+An experimental image-to-3d machine learning framework which is capable
+of training models to predict a 3d object from a single 2d image using
+zero-shot classification.
 
 # Setup
 1. Install [Blender (3.5.*)](https://www.blender.org/download/).
