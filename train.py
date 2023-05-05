@@ -7,6 +7,7 @@ from tensorflow.keras import layers, models, optimizers
 from sklearn.model_selection import train_test_split
 
 # Constants
+ENABLE_GPUS = False
 MODEL_FILE = 'model.h5'
 NUM_DIMS = 3  # Define the number of dimensions for each point in the point cloud
 VOXEL_RES= 32
@@ -60,15 +61,23 @@ train_objs = np.load('train_objs.npy')
 val_objs = np.load('val_objs.npy')
 
 # Check for GPU availability
-print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 gpus = tf.config.list_physical_devices('GPU')
-if gpus:
-    # Use the first GPU device
-    gpu_device = gpus[0].name
-    tf.config.experimental.set_visible_devices(gpus[0], 'GPU')
-    print(f'Using GPU device: {gpu_device}')
-else:
-    print('GPU not found, using CPU.')
+#print(f'gpus:\n{gpus}\n')
+
+if ENABLE_GPUS:
+    print("Num GPUs Available: ", len(gpus))
+    if gpus:
+        # Use the first GPU device
+        gpu_device = gpus[0].name
+        tf.config.set_visible_devices(gpus[0], 'GPU')
+        tf.config.set_memory_growth(gpus[0], True)
+        print(f'Using GPU device: {gpu_device}')
+    else:
+        print('GPU not found, using CPU.')
+
+if EPOCHS <= 0:
+    print('Training epochs <= 0. Exiting.')
+    exit(0)
 
 # Create the model
 model = create_model()
@@ -89,7 +98,7 @@ model.compile(optimizer=optimizers.Nadam(learning_rate=0.001),
 			  loss='mean_squared_error', metrics=['mean_absolute_error'])
 
 # Train the model
-history = model.fit(train_images, train_objs, epochs=EPOCHS, batch_size=32, validation_data=(val_images, val_objs))
+history = model.fit(train_images, train_objs, epochs=EPOCHS, batch_size=64, validation_data=(val_images, val_objs))
 
 # Save the model
 model.save(MODEL_FILE)

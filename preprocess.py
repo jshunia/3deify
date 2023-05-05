@@ -23,6 +23,35 @@ IMAGE_DIR = '_images'
 VOXEL_RES = 32
 IMAGE_RES = 128
 
+def get_obj_trimesh(obj):
+    output_file_path = "temp.obj"  # Replace with the desired output file path
+
+    # Make sure the object type is MESH
+    if obj.type == "MESH":
+        # Deselect all objects
+        bpy.ops.object.select_all(action='DESELECT')
+
+        # Select only the target object
+        obj.select_set(True)
+
+        # Set the target object as the active object
+        bpy.context.view_layer.objects.active = obj
+
+        # Export the object to .obj file
+        bpy.ops.export_scene.obj(
+            filepath=output_file_path,
+            use_selection=True,  # Export only the selected object
+            use_mesh_modifiers=True,  # Apply mesh modifiers
+            axis_forward='-Z',  # Forward axis
+            axis_up='Y'  # Up axis
+        )
+        
+        mesh = trimesh.load_mesh(output_file_path)
+        return mesh
+    else:
+        print("Error: 'obj' is not a mesh object.")
+        exit(1)
+
 def preprocess_image(image_path):
     img = cv2.imread(image_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
